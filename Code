@@ -1,0 +1,54 @@
+from machine import ADC, Pin
+import utime
+
+max_moisture = 27574
+min_moisture = 57100
+
+## define our soil probe as the data pin from the Moisture Sensor that's connected to GP26
+soil_probe = ADC(Pin(26))
+
+
+## define each pin that we, in combination, use to power our water pump
+p0 = Pin(0, Pin.OUT)
+p1 = Pin(1, Pin.OUT)
+p2 = Pin(2, Pin.OUT)
+p3 = Pin(3, Pin.OUT)
+p4 = Pin(4, Pin.OUT)
+
+
+## create function that converts the data received by moisture sensor into a percentage
+def get_moisture_percentage(moisture_level):
+    point_1_x = min_moisture
+    point_2_x = max_moisture
+    point_1_y = 0
+    point_2_y = 100
+    m = ((point_2_y - point_1_y) / (point_2_x - point_1_x))
+    return int((m * moisture_level) - (m * min_moisture) + point_1_y)
+
+
+## while loop that repeatedly prints that moisture level percentage as well as turns on/off the water pump based on moisture level
+while True:
+    moisture_level = soil_probe.read_u16()
+    
+    moisture_level_percentage = get_moisture_percentage(moisture_level)
+    
+    print(moisture_level_percentage)
+    
+    utime.sleep(0.8)
+    
+    if moisture_level_percentage > 50:
+        p0.value(0)
+        p1.value(0)
+        p2.value(0)
+        p3.value(0)
+        p4.value(0)
+    else:
+        p0.value(1)
+        p1.value(1)
+        p2.value(1)
+        p3.value(1)
+        p4.value(1)
+
+
+
+
